@@ -1,0 +1,143 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Al hacer click en el Boton Send se Envia el Mensaje
+            $("#btnsend").click(function () {
+                var typBox = $("#typing-box");
+                var message = typBox.val();
+                var url = "@Url.Action("sendmsg")";
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    data: '{"message":"' + message + '"}',
+                    url: url,
+                    dataType: "json",
+                    success: function (response) {
+                        var Codigo = response.Codigo;
+                        var Mensaje = response.Mensaje;
+                        var EsOK = Codigo == 0;
+                        if (EsOK) {
+                            var data = response.Data;
+                            var usr = data.Sender;
+                            printMyMessage(usr, message);
+                            typBox.val("");
+                        }
+                        else {
+                            var respuesta = Codigo + " - " + Mensaje;
+                            alert(respuesta);
+                        }                        
+                    },
+                    error: function (response) {
+                        alert(response);
+                    }
+                });
+            });
+
+            function printMyMessage(usr, message) {
+                var date = new Date(Date.now());
+                var timeFormatted = date.toLocaleTimeString("en-US", options);
+                var html = '<div class="message-box my-message-box">' +
+                    '<div class="message my-message"> ' +
+                    '<div class="my-message-usr">' + usr + '</div>' +
+                    message + '<br>' +
+                    '<div class="my-message-date">' + timeFormatted + '</div>' +
+                    ' </div>' +
+                    '<div class="separator"></div>' +
+                    '</div>';
+                printMessage(html);
+            }
+
+            // Cada 5 segundos se verifica si hay nuevos mensajes
+            setInterval(function () {
+                var url = "@Url.Action("receivemsg")";
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    data: '{}',
+                    url: url,
+                    dataType: "json",
+                    success: function (response) {
+                        var Codigo = response.Codigo;
+                        var Mensaje = response.Mensaje;
+                        var EsOK = Codigo == 0;
+                        if (EsOK) {
+                            var data = response.Data;
+                            $.each(data, function () {
+                                var message = this.Message;
+                                var sndr = this.Sender;
+                                printOthersMessage(sndr, message);
+                            });
+                        }
+                        else {
+                            var respuesta = Codigo + " - " + Mensaje;
+                            alert(respuesta);
+                        }                        
+                    },
+                    error: function (response) {
+
+                    }
+                });
+            }, 5000);
+        });
+
+        var opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+        var options = { hour: 'numeric', minute: 'numeric' };
+
+        function printOthersMessage(usr, message) {
+            var date = new Date(Date.now());
+            var timeFormatted = date.toLocaleTimeString("en-US", options);
+            var html = '<div class="message-box others-message-box">' +
+                '<div class="message others-message"> ' +
+                '<div class="my-message-usr">' + usr + '</div>' +
+                message + '<br>' +
+                '<div class="my-message-date">' + timeFormatted + '</div>' +
+                ' </div>' +
+                '<div class="separator"></div>' +
+                '</div>';
+            printMessage(html);
+        }
+
+        function printMessage(html) {
+            var msgArea = $("#message-area");
+            msgArea.append(html);
+            var h = msgArea.prop('scrollHeight')
+            msgArea.scrollTop(h);
+        }
+
+    </script>
+}
+
+<div class="header-area">
+    <h1> Browser-Based Chat </h1>
+</div>
+
+<div class="message-area" id="message-area">
+    <!--
+        <div class="message-box others-message-box">
+            <div class="message others-message"> Hi, How are you? </div>
+            <div class="separator"></div>
+        </div>
+    -->
+    <!--
+        <div class="message-box my-message-box">
+            <div class="message my-message">
+                <div class="my-message-usr"> Julio </div>
+                I am good, how are you doing?
+            </div>
+            <div class="separator"></div>
+        </div>
+    -->
+</div>
+
+<div class="typing-area">
+    <textarea class="typing-box" id="typing-box"></textarea>
+    <button class="send-button" id="btnsend"> Send </button>
+</div>
+

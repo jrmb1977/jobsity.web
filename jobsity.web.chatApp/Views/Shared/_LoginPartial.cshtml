@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNet.Identity;
+@using jobsity.web.chatApp.Models;
+@using jobsity.web.chatApp.App_Code;
+@{
+    bool UserIsAuthenticated = User.Identity.IsAuthenticated;
+    bool RequestIsAuthenticated = Request.IsAuthenticated;
+    string AuthenticationType = User.Identity.AuthenticationType;
+    string UserName = User.Identity.GetUserName();
+    //RespuestaUserInfo respuesta = Data.GetUsuario(UserName);
+    UserInformation user = new UserInformation();
+    user.Usuario = UserName;
+    //if (respuesta.EsOK())
+    //{
+    //    user = respuesta.Data;
+    //}
+    if (user != null)
+    {
+        if (!string.IsNullOrEmpty(user.Nombres))
+        {
+            string[] nombres = user.Nombres.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (nombres.Length > 0)
+            {
+                UserName = nombres[0];
+            }
+            else
+            {
+                UserName = user.Nombres;
+            }
+        }
+    }
+    string Saludo = String.Format("¡Bienvenido {0}!", UserName);
+}
+
+@if (RequestIsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Usuario", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <ul class="nav navbar-nav navbar-right">
+            <li>
+                @Html.ActionLink(Saludo, "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+            </li>
+            <li><a href="javascript:document.getElementById('logoutForm').submit()">Cerrar sesión</a></li>
+        </ul>
+    }
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("Iniciar sesión", "Login", "Usuario", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}
+
