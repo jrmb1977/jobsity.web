@@ -137,6 +137,7 @@ Considerations - The project is totally focused on the backend; please have the 
 In Views/Chat/Index.cshtml can be found the references to the main methods of the backend
 
 $("#btnsend").click(function () {.... /Controllers/ChatController/sendmsg (POST)
+
 setInterval(function () {.... /Controllers/ChatController/receivemsg (POST)
 
 JQuery is mostly used instead of just simple javascript
